@@ -1,34 +1,46 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../dao/DatabaseClasses.dart';
-
+import '../dao/Database.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  //Prima riga
-  final List<String> columns = ['Colonna 1', 'Colonna 2', 'Colonna 3', 'Colonna 4', 'Colonna 5', 'Colonna 6', 'Colonna 7', 'Colonna 8', 'Colonna 9'];
+  // Title row
+  final List<String> columns = [
+    'Colonna 1',
+    'Colonna 2',
+    'Colonna 3',
+    'Colonna 4',
+    'Colonna 5',
+    'Colonna 6',
+    'Colonna 7',
+    'Colonna 8',
+    'Colonna 9'
+  ];
 
-  //Lista vuota per le righe
+  // Empty rows
   List<List<String>> rows = [];
 
-  //Carico i dati dal database
+  // Load DB values
   Future<void> loadRows() async {
     List<Map<String, dynamic>> results = await fetchRowsFromDatabase();
 
     setState(() {
-      rows = results.map((result) => columns.map((col) => result[col].toString()).toList()).toList();
+      rows = results
+          .map(
+              (result) => columns.map((col) => result[col].toString()).toList())
+          .toList();
     });
   }
 
-  //Da modificare! Devi prendere i valori dal DB!
+  // TODO I need to load the data from the DB
   Future<List<Map<String, dynamic>>> fetchRowsFromDatabase() async {
-    await Future.delayed(
-        Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
     return [
       {
         'Colonna 1': 'Valore 1.1',
@@ -41,21 +53,42 @@ class _HomePageState extends State<HomePage> {
         'Colonna 8': 'Valore 1.8',
         'Colonna 9': 'Valore 1.9'
       },
-      {'Colonna 1': 'Valore 2.1', 'Colonna 2': 'Valore 2.2'}];
+      {'Colonna 1': 'Valore 2.1', 'Colonna 2': 'Valore 2.2'}
+    ];
   }
 
   Future<void> loadDatabase() async {
     final database = MyDatabase();
-/*
-    // Simple insert:
-    await database
-        .into(database.categories)
-        .insert(CategoriesCompanion.insert(description: 'my first category'));*/
 
-    // Simple select:
-    final allCategories = await database.select(database).get();
-    print('Categories in database: $allCategories');
+    /// Simple test for the database
+    // Insert
+    /*await database.into(database.accountTransaction).insert(
+        AccountTransactionCompanion.insert(
+            dateAndTime: DateTime.now(),
+            currency: "EUR",
+            amount: 10.02,
+            primary: "bello",
+            secondary: "bello2",
+            description: "description",
+            type: "type",
+            account: "account"));*/
+
+    // Select
+    final allTransactions =
+        await database.select(database.accountTransaction).get();
+    print('Transaction in database: $allTransactions');
+
+    // Select
+    final allPrimaryCategories =
+        await database.select(database.primaryCategory).get();
+    print('Primary Categories in database: $allPrimaryCategories');
+
+    // Select
+    final allSecondaryCategories =
+        await database.select(database.secondaryCategory).get();
+    print('Secondary Categories in database: $allSecondaryCategories');
   }
+
   // questo metodo viene chiamato quando lo stato del widget viene creato
   @override
   void initState() {
@@ -71,7 +104,7 @@ class _HomePageState extends State<HomePage> {
       body: Table(
         columnWidths: {
           for (int i = 0; i < columns.length; i++)
-            i: IntrinsicColumnWidth(),
+            i: const IntrinsicColumnWidth(),
         },
         children: [
           // crea la prima riga con le stringhe già formattate
@@ -103,5 +136,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 }
