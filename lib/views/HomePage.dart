@@ -14,18 +14,32 @@ class HomePage extends StatefulWidget {
 
 /// Home page class
 class _HomePageState extends State<HomePage> {
+  // Init database class
+  MyDatabase database = MyDatabase();
+
   /// Title row
-  final List<String> columns = [
-    'Colonna 1',
-    'Colonna 2',
-    'Colonna 3',
-    'Colonna 4',
-    'Colonna 5',
-    'Colonna 6',
-    'Colonna 7',
-    'Colonna 8',
-    'Colonna 9'
+  /// TODO I don't know if there is a dynamic way to get the coumns names
+  final List<String> columnsAccountTransaction = [
+    'ID',
+    'Date and Time',
+    'Currency',
+    'Amount',
+    'Primary',
+    'Secondary',
+    'Description',
+    'Type',
+    'Account'
   ];
+
+  /// Title row
+  /// TODO I don't know if there is a dynamic way to get the coumns names
+  final List<String> columnsPrimaryCategory = [
+    'ID',
+  ];
+
+  /// Title row
+  /// TODO I don't know if there is a dynamic way to get the coumns names
+  final List<String> columnsSecondaryCategory = ['ID', 'Primary'];
 
   /// Empty records
   List<List<String>> records = [];
@@ -36,7 +50,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     // init the DB connection
-    InitDatabaseConnection();
+    initDatabaseConnection();
     // Load Records
     loadRecords();
   }
@@ -44,24 +58,23 @@ class _HomePageState extends State<HomePage> {
   // Load DB records
   Future<void> loadRecords() async {
     // Get the rows from DB
-    List<Map<String, dynamic>> results = await fetchRowsFromDatabase();
+    List<dynamic> results = await fetchRowsFromDatabase();
 
     setState(() {
       records = results
-          .map(
-              (result) => columns.map((col) => result[col].toString()).toList())
+          .map((result) => columnsAccountTransaction
+              .map((col) => result[col].toString())
+              .toList())
           .toList();
     });
   }
 
   // Init the connection with the DB
   // TODO I think that this need to return the DB instance for execute queries
-  Future<void> InitDatabaseConnection() async {
+  Future<void> initDatabaseConnection() async {
     // ***********************
     // Database
     // ***********************
-
-    final database = MyDatabase();
 
     /// Simple test for the database
     // Insert
@@ -77,6 +90,7 @@ class _HomePageState extends State<HomePage> {
             account: "account"));*/
 
     // Select
+    // TODO Datetime crash
     final allTransactions =
         await database.select(database.accountTransaction).get();
     print('Transaction in database: $allTransactions');
@@ -106,22 +120,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   // TODO I need to load the data from the DB
-  Future<List<Map<String, dynamic>>> fetchRowsFromDatabase() async {
-    await Future.delayed(const Duration(seconds: 2));
-    return [
-      {
-        'Colonna 1': 'Valore 1.1',
-        'Colonna 2': 'Valore 1.2',
-        'Colonna 3': 'Valore 1.3',
-        'Colonna 4': 'Valore 1.4',
-        'Colonna 5': 'Valore 1.5',
-        'Colonna 6': 'Valore 1.6',
-        'Colonna 7': 'Valore 1.7',
-        'Colonna 8': 'Valore 1.8',
-        'Colonna 9': 'Valore 1.9'
-      },
-      {'Colonna 1': 'Valore 2.1', 'Colonna 2': 'Valore 2.2'}
-    ];
+  Future<List<dynamic>> fetchRowsFromDatabase() async {
+    // Select transactions
+    final allTransactions =
+        await database.select(database.accountTransaction).get();
+
+    return allTransactions;
   }
 
   // Request the financial informations
@@ -137,14 +141,14 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: Table(
         columnWidths: {
-          for (int i = 0; i < columns.length; i++)
+          for (int i = 0; i < columnsAccountTransaction.length; i++)
             i: const IntrinsicColumnWidth(),
         },
         children: [
           // Title row of the grid
           TableRow(
             children: [
-              for (final col in columns)
+              for (final col in columnsAccountTransaction)
                 TableCell(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
