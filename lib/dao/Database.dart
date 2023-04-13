@@ -5,7 +5,9 @@ import 'package:path/path.dart' as p;
 
 part 'Database.g.dart';
 
-//@DataClassName('AccountTransaction')
+/// The class `AccountTransaction` defines a table schema for storing financial transaction data with
+/// various columns such as ID, date and time, currency, amount, primary and secondary category IDs,
+/// description, type, and account.
 class AccountTransaction extends Table {
   String get tableName => 'AccountTransaction';
   IntColumn get ID => integer().named('ID').autoIncrement()();
@@ -24,7 +26,8 @@ class AccountTransaction extends Table {
   Set<Column> get primaryKey => {ID};
 }
 
-//@DataClassName('PrimaryCategories')
+/// This is a Dart class that defines a database table called "PrimaryCategory" with a single primary
+/// key column named "ID".
 class PrimaryCategory extends Table {
   String get tableName => 'PrimaryCategory';
   TextColumn get ID => text().named('ID')();
@@ -33,7 +36,8 @@ class PrimaryCategory extends Table {
   Set<Column> get primaryKey => {ID};
 }
 
-//@DataClassName('SecondaryCategories')
+/// The SecondaryCategory class defines a table with ID and primaryID columns that reference the
+/// PrimaryCategory table.
 class SecondaryCategory extends Table {
   String get tableName => 'SecondaryCategory';
   TextColumn get ID => text().named('ID')();
@@ -44,6 +48,8 @@ class SecondaryCategory extends Table {
   Set<Column> get primaryKey => {ID, primaryID};
 }
 
+/// The above class defines a database in Dart using the Drift library with tables for account
+/// transactions, primary categories, and secondary categories.
 @DriftDatabase(tables: [AccountTransaction, PrimaryCategory, SecondaryCategory])
 class MyDatabase extends _$MyDatabase {
   // We tell the database where to store the data with this constructor
@@ -55,6 +61,14 @@ class MyDatabase extends _$MyDatabase {
   int get schemaVersion => 1;
 }
 
+/// This function returns a lazy database connection to a SQLite database file located in a specified
+/// path.
+///
+/// Returns:
+///   A `LazyDatabase` object is being returned. The `LazyDatabase` constructor takes a function that
+/// returns a `Future<Database>` as an argument. In this case, the function being passed to the
+/// constructor is an asynchronous function that creates a `NativeDatabase` object in the background and
+/// returns it as a `Future`.
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     // TODO make the path dynamic

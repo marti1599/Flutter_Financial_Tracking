@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 import '../dao/Database.dart';
 
@@ -9,8 +12,9 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+/// Home page class
 class _HomePageState extends State<HomePage> {
-  // Title row
+  /// Title row
   final List<String> columns = [
     'Colonna 1',
     'Colonna 2',
@@ -23,41 +27,40 @@ class _HomePageState extends State<HomePage> {
     'Colonna 9'
   ];
 
-  // Empty rows
-  List<List<String>> rows = [];
+  /// Empty records
+  List<List<String>> records = [];
 
-  // Load DB values
-  Future<void> loadRows() async {
+  // Widget state init
+  @override
+  void initState() {
+    super.initState();
+
+    // init the DB connection
+    InitDatabaseConnection();
+    // Load Records
+    loadRecords();
+  }
+
+  // Load DB records
+  Future<void> loadRecords() async {
+    // Get the rows from DB
     List<Map<String, dynamic>> results = await fetchRowsFromDatabase();
 
     setState(() {
-      rows = results
+      records = results
           .map(
               (result) => columns.map((col) => result[col].toString()).toList())
           .toList();
     });
   }
 
-  // TODO I need to load the data from the DB
-  Future<List<Map<String, dynamic>>> fetchRowsFromDatabase() async {
-    await Future.delayed(const Duration(seconds: 2));
-    return [
-      {
-        'Colonna 1': 'Valore 1.1',
-        'Colonna 2': 'Valore 1.2',
-        'Colonna 3': 'Valore 1.3',
-        'Colonna 4': 'Valore 1.4',
-        'Colonna 5': 'Valore 1.5',
-        'Colonna 6': 'Valore 1.6',
-        'Colonna 7': 'Valore 1.7',
-        'Colonna 8': 'Valore 1.8',
-        'Colonna 9': 'Valore 1.9'
-      },
-      {'Colonna 1': 'Valore 2.1', 'Colonna 2': 'Valore 2.2'}
-    ];
-  }
+  // Init the connection with the DB
+  // TODO I think that this need to return the DB instance for execute queries
+  Future<void> InitDatabaseConnection() async {
+    // ***********************
+    // Database
+    // ***********************
 
-  Future<void> loadDatabase() async {
     final database = MyDatabase();
 
     /// Simple test for the database
@@ -87,15 +90,46 @@ class _HomePageState extends State<HomePage> {
     final allSecondaryCategories =
         await database.select(database.secondaryCategory).get();
     print('Secondary Categories in database: $allSecondaryCategories');
+
+    // ***********************
+    // Finance API
+    // ***********************
+
+    final response = await http.get(Uri.parse(
+        'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=W11MP2QL3HTKN1SS'));
+
+    print(jsonDecode(response.body));
+
+    // Base API request
+    // Don't know why but doesn't work
+    //print(requestFinanceAPI());
   }
 
-  // questo metodo viene chiamato quando lo stato del widget viene creato
-  @override
-  void initState() {
-    super.initState();
+  // TODO I need to load the data from the DB
+  Future<List<Map<String, dynamic>>> fetchRowsFromDatabase() async {
+    await Future.delayed(const Duration(seconds: 2));
+    return [
+      {
+        'Colonna 1': 'Valore 1.1',
+        'Colonna 2': 'Valore 1.2',
+        'Colonna 3': 'Valore 1.3',
+        'Colonna 4': 'Valore 1.4',
+        'Colonna 5': 'Valore 1.5',
+        'Colonna 6': 'Valore 1.6',
+        'Colonna 7': 'Valore 1.7',
+        'Colonna 8': 'Valore 1.8',
+        'Colonna 9': 'Valore 1.9'
+      },
+      {'Colonna 1': 'Valore 2.1', 'Colonna 2': 'Valore 2.2'}
+    ];
+  }
 
-    loadDatabase();
-    loadRows();
+  // Request the financial informations
+  dynamic requestFinanceAPI() async {
+    final response = await http.get(Uri.parse(
+        'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=W11MP2QL3HTKN1SS'));
+
+    return jsonDecode(response.body);
   }
 
   @override
@@ -107,7 +141,7 @@ class _HomePageState extends State<HomePage> {
             i: const IntrinsicColumnWidth(),
         },
         children: [
-          // crea la prima riga con le stringhe già formattate
+          // Title row of the grid
           TableRow(
             children: [
               for (final col in columns)
@@ -119,11 +153,11 @@ class _HomePageState extends State<HomePage> {
                 ),
             ],
           ),
-          // aggiungi le righe dal database
-          for (final row in rows)
+          // DB Records
+          for (final record in records)
             TableRow(
               children: [
-                for (final cell in row)
+                for (final cell in record)
                   TableCell(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
